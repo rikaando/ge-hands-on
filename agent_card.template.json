@@ -1,0 +1,24 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "concierge_agent",
+  "description": "社内担当者向けに「①約款・対象外チェック → ②支払保険金試算＆案内文作成」を自動実行する審査サポートエージェント",
+  "url": "__AGENT_URL__",
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": false
+  },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain"],
+  "skills": [
+    {
+      "id": "claims_review_workflow",
+      "name": "保険金審査・支払額試算ワークフロー",
+      "description": "診療内容から約款上の対象外項目・必要書類を判定し、プラン別の支払保険金・自己負担額の試算とお客さま案内トーク例を作成します。",
+      "tags": ["insurance", "workflow", "claims-review"],
+      "examples": [
+        "あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？",
+        "あんしんプラン ライトで、椎間板ヘルニアの手術28万円をWEB請求するといくら出る？"
+      ]
+    }
+  ]
+}
