@@ -81,7 +81,7 @@ def calculate_payout(
 # Step 1: 約款・審査ルール確認エージェント
 policy_checker = Agent(
     name="policy_checker",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="診療内容から約款上の補償可否・対象外項目・必要書類を判定するエージェント",
     instruction=(
         "あなたは保険金サービス部の一次審査チェッカーです。\n"
