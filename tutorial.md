@@ -55,16 +55,16 @@ echo "CSV upload complete."
 BigQuery の Conversational Analytics 機能を使い、自然言語でデータを集計・分析するエージェントを作成します。
 
 1. [BigQuery コンソール](https://console.cloud.google.com/bigquery) を開きます。
-   左メニューの **「Agents（エージェント）」** → **「Agent catalog」** → **「+ New agent（+ 新しいエージェント）」** をクリックします。
+   左メニューの **エージェント** → ** + 新しいエージェント ** をクリックします。
 
 2. 基本情報を入力します。
-   * **Agent name** に `claims_analyzer` を入力
-   * **Agent description** に `保険金請求・お客さまの声データを集計・分析するエージェント` を入力
-   * **Region** は `US`（または `Global`）を選択
+   * **エージェント名** に `claims_analyzer` を入力
+   * **エージェントの説明** に `保険金請求・お客さまの声データを集計・分析するエージェント` を入力
+   * **リージョン** は `US`（または `Global`）を選択
 
-3. **Knowledge sources（ナレッジソース）** の **「+ Add source」** をクリックし、**`insurance_demo` -> `claims`** テーブルを選択して **「Add」** をクリックします。
+3. **ナレッジソース** の **ソースの追加** をクリックし、**`insurance_demo` -> `claims`** テーブルを選択して **確認** をクリックします。
 
-4. **Agent instructions（エージェントへの指示）** に以下を貼り付けます。
+4. **手順** に以下を貼り付けます。
    ```text
    あなたは保険金請求・お客さまの声（VOC）データを分析するアシスタントです。
    - 傷病カテゴリ（disease_category）の件数ランキングを出す際は、同率順位も省略せず表示してください。
@@ -72,22 +72,25 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
    - お客さまの声（customer_voice）の分析時は、精算方法（claim_method）ごとの傾向や改善要望を要約してください。
    ```
 
-5. 画面右上の **「Publish（公開）」** をクリックします。
-   開いたダイアログの **Additional channels** にある **「Integrate via A2A (Agent2Agent)」** の **「Copy JSON」** をクリックしてコピーし、右下の **「Publish」** を確定します。
+5. 画面右上の **保存** をクリックし、右側の公開をクリックします。
+   開いたダイアログの右下の **「Publish agent」** をクリックし、エージェントを公開します。
+   ポップアップが出たら、公開をクリックします。
+   権限の共有ページでプリンシパルを追加をクリックし、新しいプリンシパルにemailを追加し、ロールには**Gemini データ分析データ エージェント オーナー**を選択し、保存します。
 
-公開が完了したら **「次へ（Next）」** をクリックしてください。
+6. 再度、**公開**をクリックし、A2A経由での統合のJSONをコピーをクリックし、クリップボードに保存します。
+
 
 ## Step 4: テーマ1（3/3）Gemini Enterprise App に登録して分析
 
 公開した BigQuery エージェントを Gemini Enterprise App に接続し、チャット画面からデータを集計します。
 
-1. [Gemini Enterprise 管理コンソール](https://console.cloud.google.com/gemini-enterprise) で対象の App を選び、左メニュー **「Agents」** → **「+ Add Agents」** をクリックします。
+1. [Gemini Enterprise 管理コンソール](https://console.cloud.google.com/gemini-enterprise) で対象の App を選び、左メニュー **エージェント** → **+ エージェントを追加** をクリックします。
 
-2. **「Custom agent via A2A」** の **「Add」** をクリックし、Step 3 でコピーした JSON を貼り付けて **「Preview agent details」** → **「Next」** をクリックします。
+2. **A2A によるカスタム エージェント**の追加をクリックし、Step 3 でコピーした JSON を貼り付けて **エージェントの詳細をプレビュー** → **次へ** をクリックします。
 
-3. 認証設定で **「Default Google-managed credentials」** を選択し、**「Finish」** をクリックします。
+3. エージェントの認可では **Google が管理するデフォルトの認証情報** を選択し、**完了** をクリックします。
 
-4. Gemini Enterprise のチャット画面（Web App）を開いて **ブラウザを再読み込み（リロード）** し、`@claims_analyzer` に以下の質問を送信してみましょう。
+4. Gemini Enterprise のアプリ画面を再読み込みし、エージェント > 自分の組織からに追加された `@claims_analyzer` をクリックし、以下の質問を送信してみましょう。
 
 ```text
 @claims_analyzer 犬と猫それぞれで請求件数が多い傷病トップ3（同率含む）と、プラン別の平均診療費・平均支払保険金を教えて
@@ -97,7 +100,9 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 @claims_analyzer 窓口精算・WEB請求・郵送請求それぞれの利用率と、お客さまの声にある改善要望の傾向をまとめて
 ```
 
-確認できたら **「次へ（Next）」** をクリックしてください。
+はじめての場合、エージェントに次の場所へのアクセスを追加で承認する必要があります。と画面に表示された場合は、承認をクリックし、ポップアップからワークスペースのアカウントで承認します。
+これでテーマ1の BigQuery の対話型エージェントを Gemini Enterprise から利用することができるようになりました。
+
 
 ## Step 5: テーマ2（1/3）ADK 2.0 エージェントのコード確認
 
