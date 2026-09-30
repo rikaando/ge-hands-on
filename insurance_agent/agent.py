@@ -94,7 +94,7 @@ policy_checker = Agent(
 # Step 2: 支払額試算＆社内回答作成エージェント
 payout_calculator = Agent(
     name="payout_calculator",
-    model="gemini-2.5-flash",
+    model="gemini-3.8-flash",
     description="審査結果に基づき支払保険金を試算し、社内審査メモとお客さま案内文を作成するエージェント",
     instruction=(
         "あなたは保険金サービス部・お客さまサポート部向けの照会回答作成アシスタントです。\n"

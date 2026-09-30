@@ -18,6 +18,7 @@
 
 ```bash
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
 export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
 export GOOGLE_CLOUD_LOCATION="us-central1"
 gcloud services enable bigquery.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com aiplatform.googleapis.com discoveryengine.googleapis.com geminidataanalytics.googleapis.com cloudaicompanion.googleapis.com dataplex.googleapis.com agentregistry.googleapis.com
@@ -26,6 +27,7 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="service
 echo "Step 1 setup complete."
 ```
 
+※もし `(unset)` エラーが表示された場合は、`gcloud config set project プロジェクトID` を実行してから再度実行してください。
 ※Gemini Enterprise App が別プロジェクトにある場合のみ、以下の `GEMINI_ENTERPRISE_PROJECT_ID` を書き換えて実行してください（同一プロジェクトの場合は不要です）。
 
 ```bash
@@ -42,6 +44,7 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="service
 コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して実行してください。
 
 ```bash
+gcloud config set project $(cat .project_id) --quiet
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 bq --location=US mk -d -f ${GOOGLE_CLOUD_PROJECT}:insurance_demo
 bq load --replace --source_format=CSV --skip_leading_rows=1 ${GOOGLE_CLOUD_PROJECT}:insurance_demo.claims ./claims_sample.csv ./claims_schema.json
@@ -116,7 +119,7 @@ ADK のエージェントを作成する場合には、**次へ** をクリッ�
 
 ## Step 5: テーマ2（1/3）ADK 2.0 エージェントの確認
 
-テーマ2では、社内担当者向けに **「①約款・対象外チェック → ②支払保険金試算＆案内文作成」** を2段階で自動実行する ADK 2.0 ワークフローエージェントを Cloud Run にデプロイし、Gemini Enterpries に登録します。
+テーマ2では、社内担当者向けに **「①約款・対象外チェック → ②支払保険金試算＆案内文作成」** を2段階で自動実行する ADK 2.0 ワークフローエージェントを Cloud Run にデプロイし、Gemini Enterprise に登録します。
 
 以下のボタンをクリックして、エディタでコードを開いてみましょう。
 
@@ -145,6 +148,7 @@ ADK 2.0 エージェントを Cloud Run にデプロイし、Gemini Enterprise �
 コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して実行してください。
 
 ```bash
+gcloud config set project $(cat .project_id) --quiet
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
 export GOOGLE_CLOUD_LOCATION="us-central1"
@@ -155,7 +159,7 @@ sed "s|__AGENT_URL__|${AGENT_URL}|g" agent_card.template.json > agent_card.json
 cat agent_card.json
 ```
 
-デプロイ完了後、以下のボタンで `agent_card.json` を開いて中身をすべてコピーし、**次へ** をクリックしてください。
+デプロイ完了後、以下のボタンで `agent_card.json` を開いて中身をすべてコピーし、**次へ** をクリックしてください（またはターミナルに出力された JSON をそのままコピーしても構いません）。
 
 <walkthrough-editor-open-file filePath="agent_card.json">生成された agent_card.json を開く</walkthrough-editor-open-file>
 
