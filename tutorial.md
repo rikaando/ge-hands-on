@@ -114,15 +114,17 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 
 ADK のエージェントを作成する場合には、**次へ** をクリックしてください。
 
-## Step 5: テーマ2（1/3）ADK 2.0 エージェントのコード確認
+## Step 5: テーマ2（1/3）ADK 2.0 エージェントの確認
 
-テーマ2では、社内担当者向けに **「①約款・対象外チェック → ②支払保険金試算＆案内文作成」** を2段階で自動実行する ADK 2.0 ワークフローエージェントを確認します。
+テーマ2では、社内担当者向けに **「①約款・対象外チェック → ②支払保険金試算＆案内文作成」** を2段階で自動実行する ADK 2.0 ワークフローエージェントを Cloud Run にデプロイし、Gemini Enterpries に登録します。
 
 以下のボタンをクリックして、エディタでコードを開いてみましょう。
 
 <walkthrough-editor-open-file filePath="insurance_agent/agent.py">insurance_agent/agent.py を開く</walkthrough-editor-open-file>
 
 <walkthrough-editor-open-file filePath="main.py">main.py を開く</walkthrough-editor-open-file>
+
+ファイルが開かなかった場合には、エディタからge-hands-onのフォルダを開き、上記のファイルを確認します。
 
 **コードの構成（`insurance_agent/agent.py`）**
 * **1. ツール定義（Python 関数）**
