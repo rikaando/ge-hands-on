@@ -11,23 +11,32 @@
 
 ## Step 1: 事前準備（API有効化と権限設定）
 
-エージェントの作成に必要な API を有効化し、Cloud Run 呼び出し権限（`roles/run.invoker`）とモデル利用権限（`roles/aiplatform.user`）を付与します。
-
+エージェントの作成に必要な API の有効化と、サービスアカウントへの権限付与を順番に行います。
 コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して実行してください。
+
+**1. 必要な API の有効化**
 （初回に「承認 / Authorize」が表示された場合は **承認** をクリックします）
 
 ```bash
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
-export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
-export GOOGLE_CLOUD_LOCATION="us-central1"
 gcloud services enable bigquery.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com aiplatform.googleapis.com discoveryengine.googleapis.com geminidataanalytics.googleapis.com cloudaicompanion.googleapis.com dataplex.googleapis.com agentregistry.googleapis.com
+echo "API enablement complete."
+```
+
+※もし `(unset)` エラーが表示された場合は、`gcloud config set project プロジェクトID` を実行してから再度実行してください。
+
+**2. サービスアカウントへの権限付与**
+Cloud Run 呼び出し権限（`roles/run.invoker`）と、Vertex AI のモデル利用権限（`roles/aiplatform.user`）を付与します。
+
+```bash
+export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
+export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
 gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" --role="roles/run.invoker" --condition=None --no-user-output-enabled --quiet
 gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" --role="roles/aiplatform.user" --condition=None --no-user-output-enabled --quiet
 echo "Step 1 setup complete."
 ```
 
-※もし `(unset)` エラーが表示された場合は、`gcloud config set project プロジェクトID` を実行してから再度実行してください。
 ※Gemini Enterprise App が別プロジェクトにある場合のみ、以下の `GEMINI_ENTERPRISE_PROJECT_ID` を書き換えて実行してください（同一プロジェクトの場合は不要です）。
 
 ```bash
@@ -143,23 +152,32 @@ ADK のエージェントを作成する場合には、**次へ** をクリッ�
 
 ## Step 6: テーマ2（2/3）Cloud Run へのデプロイと JSON 出力
 
-ADK 2.0 エージェントを Cloud Run にデプロイし、Gemini Enterprise 登録用の `agent_card.json` を生成します（約2〜3分かかります）。
+ADK 2.0 エージェントを Cloud Run にデプロイし、Gemini Enterprise 登録用の `agent_card.json` を生成します。
+コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して順番に実行してください。
 
-コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して実行してください。
+**1. Cloud Run へのデプロイ**（約2〜3分かかります）
 
 ```bash
 gcloud config set project $(cat .project_id) --quiet
-export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
 export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
 export GOOGLE_CLOUD_LOCATION="us-central1"
 export AGENT_URL="https://insurance-concierge-agent-${PROJECT_NUMBER}.${GOOGLE_CLOUD_LOCATION}.run.app"
 gcloud run deploy insurance-concierge-agent --source . --region=${GOOGLE_CLOUD_LOCATION} --project=${GOOGLE_CLOUD_PROJECT} --memory=1Gi --no-allow-unauthenticated --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=global,AGENT_URL=${AGENT_URL}" --quiet
+```
+
+**2. 登録用 `agent_card.json` の生成**
+デプロイが完了したら、以下のコマンドを実行して Cloud Run の URL を埋め込んだ `agent_card.json` を出力します。
+
+```bash
+export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
+export GOOGLE_CLOUD_LOCATION="us-central1"
 export AGENT_URL=$(gcloud run services describe insurance-concierge-agent --region=${GOOGLE_CLOUD_LOCATION} --project=${GOOGLE_CLOUD_PROJECT} --format="value(status.url)")
 sed "s|__AGENT_URL__|${AGENT_URL}|g" agent_card.template.json > agent_card.json
 cat agent_card.json
 ```
 
-デプロイ完了後、以下のボタンで `agent_card.json` を開いて中身をすべてコピーし、**次へ** をクリックしてください（またはターミナルに出力された JSON をそのままコピーしても構いません）。
+ターミナルに出力された JSON（または以下のボタンで開いた `agent_card.json` の中身）をすべてコピーし、**次へ** をクリックしてください。
 
 <walkthrough-editor-open-file filePath="agent_card.json">生成された agent_card.json を開く</walkthrough-editor-open-file>
 
