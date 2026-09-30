@@ -33,6 +33,7 @@ export GE_PROJECT_NUMBER=$(gcloud projects describe GEMINI_ENTERPRISE_PROJECT_ID
 gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:service-${GE_PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" --role="roles/run.invoker" --condition=None --no-user-output-enabled --quiet
 ```
 
+実行が完了したら **次へ** をクリックしてください。
 
 ## Step 2: テーマ1（1/3）BigQuery へのサンプルデータ登録
 
@@ -54,30 +55,33 @@ echo "CSV upload complete."
 BigQuery の Conversational Analytics 機能を使い、自然言語でデータを集計・分析するエージェントを作成します。
 
 1. [BigQuery コンソール](https://console.cloud.google.com/bigquery) を開きます。
-   左メニューの **エージェント** → ** + 新しいエージェント ** をクリックします。
+   左メニューの **エージェント** → **+ 新しいエージェント** をクリックします。
 
 2. 基本情報を入力します。
    * **エージェント名** に `claims_analyzer` を入力
    * **エージェントの説明** に `保険金請求・お客さまの声データを集計・分析するエージェント` を入力
    * **リージョン** は `US`（または `Global`）を選択
 
-3. **ナレッジソース** の **ソースの追加** をクリックし、**`insurance_demo` -> `claims`** テーブルを選択して **確認** をクリックします。
+3. **ナレッジソース** の **ソースの追加** をクリックし、**`insurance_demo` -> `claims`** テーブルを選択して **「確認」** をクリックします。
 
 4. **手順** に以下を貼り付けます。
    ```text
    あなたは保険金請求・お客さまの声（VOC）データを分析するアシスタントです。
+   - SQLのSELECT句では、カラム名に日本語の別名（例: 種別, 傷病名, プラン名, 請求件数, 平均診療費_円, 平均支払保険金_円）を付け、val1のような汎用名は使わないでください。
+   - 1回のクエリで集計軸が異なる複数の表をUNION ALLで結合せず、1つの分かりやすい集計表として出力してください。
+   - 金額の平均値は ROUND 関数で整数（1円単位）に丸めて表示してください。
    - 傷病カテゴリ（disease_category）の件数ランキングを出す際は、同率順位も省略せず表示してください。
-   - 金額の集計時は、診療費（medical_fee_yen）と支払保険金（payout_yen）を円単位で分かりやすく表示してください。
    - お客さまの声（customer_voice）の分析時は、精算方法（claim_method）ごとの傾向や改善要望を要約してください。
    ```
 
-5. 画面右上の **保存** をクリックし、右側の公開をクリックします。
+5. 画面右上の **保存** をクリックし、右側の **公開** をクリックします。
    開いたダイアログの右下の **「Publish agent」** をクリックし、エージェントを公開します。
-   ポップアップが出たら、公開をクリックします。
-   権限の共有ページでプリンシパルを追加をクリックし、新しいプリンシパルにemailを追加し、ロールには**Gemini データ分析データ エージェント オーナー**を選択し、保存します。
+   ポップアップが出たら、**公開** をクリックします。
+   権限の共有ページで **プリンシパルを追加** をクリックし、新しいプリンシパルに自分の email を追加し、ロールには **Gemini データ分析データ エージェント オーナー** を選択し、**保存** します。
 
-6. 再度、**公開**をクリックし、A2A経由での統合のJSONをコピーをクリックし、クリップボードに保存します。
+6. 再度、**公開** をクリックし、**A2A 経由での統合** の **JSON をコピー** をクリックし、クリップボードに保存します。
 
+公開が完了したら **次へ** をクリックしてください。
 
 ## Step 4: テーマ1（3/3）Gemini Enterprise App に登録して分析
 
@@ -85,23 +89,27 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 
 1. [Gemini Enterprise 管理コンソール](https://console.cloud.google.com/gemini-enterprise) で対象の App を選び、左メニュー **エージェント** → **+ エージェントを追加** をクリックします。
 
-2. **A2A によるカスタム エージェント**の追加をクリックし、Step 3 でコピーした JSON を貼り付けて **エージェントの詳細をプレビュー** → **次へ** をクリックします。
+2. **A2A によるカスタム エージェント** の追加をクリックし、Step 3 でコピーした JSON を貼り付けて **エージェントの詳細をプレビュー** → **次へ** をクリックします。
 
 3. エージェントの認可では **Google が管理するデフォルトの認証情報** を選択し、**完了** をクリックします。
 
-4. Gemini Enterprise のアプリ画面を再読み込みし、エージェント > 自分の組織からに追加された `@claims_analyzer` をクリックし、以下の質問を送信してみましょう。
+4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `@claims_analyzer` をクリックし、以下の質問を送信してみましょう。
 
 ```text
-@claims_analyzer 犬と猫それぞれで請求件数が多い傷病トップ3（同率含む）と、プラン別の平均診療費・平均支払保険金を教えて
+@claims_analyzer 犬と猫それぞれで、請求件数が多い傷病トップ3（同率含む）と、その傷病ごとの平均診療費・平均支払保険金を教えて
+```
+
+```text
+@claims_analyzer プラン別の請求件数・平均診療費・平均支払保険金を比較して
 ```
 
 ```text
 @claims_analyzer 窓口精算・WEB請求・郵送請求それぞれの利用率と、お客さまの声にある改善要望の傾向をまとめて
 ```
 
-はじめての場合、エージェントに次の場所へのアクセスを追加で承認する必要があります。と画面に表示された場合は、承認をクリックし、ポップアップからワークスペースのアカウントで承認します。
-これでテーマ1の BigQuery の対話型エージェントを Gemini Enterprise から利用することができるようになりました。
+※初回利用時にアクセス承認のメッセージが表示された場合は、**承認** をクリックし、ポップアップから Google Workspace のアカウントで承認します。
 
+これでテーマ1の BigQuery の対話型エージェントを Gemini Enterprise から利用できるようになりました。**次へ** をクリックしてください。
 
 ## Step 5: テーマ2（1/3）ADK 2.0 エージェントのコード確認
 
@@ -123,7 +131,7 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 * **3. ワークフロー定義（`SequentialAgent`）**
   * `root_agent`: 2つのエージェントを直列につなぎ、`main.py` の `to_a2a(root_agent)` で A2A サーバーとして公開
 
-コードの編集は不要です。確認したら **「次へ（Next）」** をクリックしてください。
+コードの編集は不要です。確認したら **次へ** をクリックしてください。
 
 ## Step 6: テーマ2（2/3）Cloud Run へのデプロイと JSON 出力
 
@@ -142,7 +150,7 @@ sed "s|__AGENT_URL__|${AGENT_URL}|g" agent_card.template.json > agent_card.json
 cat agent_card.json
 ```
 
-デプロイ完了後、以下のボタンで `agent_card.json` を開いて中身をすべてコピーし、**「次へ（Next）」** をクリックしてください。
+デプロイ完了後、以下のボタンで `agent_card.json` を開いて中身をすべてコピーし、**次へ** をクリックしてください。
 
 <walkthrough-editor-open-file filePath="agent_card.json">生成された agent_card.json を開く</walkthrough-editor-open-file>
 
@@ -150,13 +158,13 @@ cat agent_card.json
 
 生成した `agent_card.json` を Gemini Enterprise App に登録し、審査・試算ワークフローを呼び出します。
 
-1. [Gemini Enterprise 管理コンソール](https://console.cloud.google.com/gemini-enterprise) で対象の App を選び、左メニュー **「Agents」** → **「+ Add Agents」** をクリックします。
+1. [Gemini Enterprise 管理コンソール](https://console.cloud.google.com/gemini-enterprise) で対象の App を選び、左メニュー **エージェント** → **+ エージェントを追加** をクリックします。
 
-2. **「Custom agent via A2A」** の **「Add」** をクリックし、**「Agent card JSON」** 欄に Step 6 でコピーした JSON を貼り付けます。
+2. **A2A によるカスタム エージェント** の追加をクリックし、Step 6 でコピーした JSON を貼り付けて **エージェントの詳細をプレビュー** → **次へ** をクリックします。
 
-3. **「Preview agent details」** → **「Next」** をクリックし、認証設定画面では何も変更せず **「Skip & Finish」** をクリックします。
+3. エージェントの認可画面では何も変更せず **スキップして終了** をクリックします。
 
-4. Gemini Enterprise のチャット画面（Web App）を開いて **ブラウザを再読み込み（リロード）** し、`@concierge_agent` に以下の質問を送信してみましょう。
+4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `@concierge_agent` をクリックし、以下の質問を送信してみましょう。
 
 ```text
 @concierge_agent あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
@@ -166,25 +174,25 @@ cat agent_card.json
 @concierge_agent あんしんプラン ライトで、椎間板ヘルニアの手術28万円をWEB請求するといくら出る？
 ```
 
-確認できたら **「次へ（Next）」** をクリックしてください。
+確認できたら **次へ** をクリックしてください。
 
 ## Step 8: 応用編まとめ（Agent Designer で Google Workspace と連携）
 
 最後に、Step 7 で登録した `concierge_agent` と Google Workspace（Gmail）をノーコードでつなぐワークフローを作成します。
 
-1. Gemini Enterprise のチャット画面左メニュー **「Agents」** から、**「+ New agent」** → **「Workflow」** → **「Build manually」** をクリックします。
+1. Gemini Enterprise のアプリ画面左メニュー **エージェント** から、**+ 新しいエージェント（または + エージェントを作成）** → **Workflow（ワークフロー）** → **Build manually（手動で作成）** をクリックします。
 
-2. 最初の **Manual trigger** ノードをクリックし、**Input fields** に `inquiry` を追加します。
+2. 最初の **Manual trigger（手動トリガー）** ノードをクリックし、**Input fields（入力フィールド）** に `inquiry` を追加します。
 
-3. **「+ Add step」** → **「Existing agents」** から **`concierge_agent`** を選択します。
+3. **+ Add step（ステップを追加）** → **Existing agents（既存のエージェント）** から **`concierge_agent`** を選択します。
    **Prompt** 欄で **`+`** を押し、入力チップ（`${inquiry}`）を挿入します。
 
-4. 続けて **「+ Add step」** → **「Apps」**（`View all`）→ **「Gmail」** → **「Send message」** を選択し、以下を設定します。
+4. 続けて **+ Add step（ステップを追加）** → **Apps**（`View all`）→ **Gmail** → **Send message（メッセージを送信）** を選択し、以下を設定します。
    * **To** 欄に自分のメールアドレスを入力
    * **Subject** 欄に半角英数字で `Claims Review Result` と入力
    * **Message** 欄で **`+`** を押し、`concierge_agent` の出力チップ（`${concierge_agent.output}`）を挿入
 
-5. 画面上部の **「Test（または Preview）」** タブを開き、`inquiry` に以下を入力して実行すると、審査・試算結果が Gmail へ自動送信されます。
+5. 画面上部の **Test（または Preview）** タブを開き、`inquiry` に以下を入力して実行すると、審査・試算結果が Gmail へ自動送信されます。
 
 ```text
 あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
