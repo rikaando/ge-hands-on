@@ -7,7 +7,7 @@
 2. **テーマ2（審査サポート）**
    社内担当者向けの保険金審査・試算ワークフロー（ADK 2.0 エージェント `concierge_agent`）を Cloud Run にデプロイし、Gemini Enterprise や Google Workspace と連携します。
 
-右下の **「開始（Start）」** をクリックして進めてください。
+右下の **開始** をクリックして進めてください。
 
 ## Step 1: 事前準備（API有効化と権限設定）
 
@@ -33,7 +33,6 @@ export GE_PROJECT_NUMBER=$(gcloud projects describe GEMINI_ENTERPRISE_PROJECT_ID
 gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:service-${GE_PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" --role="roles/run.invoker" --condition=None --no-user-output-enabled --quiet
 ```
 
-実行が完了したら **「次へ（Next）」** をクリックしてください。
 
 ## Step 2: テーマ1（1/3）BigQuery へのサンプルデータ登録
 
@@ -48,7 +47,7 @@ bq load --replace --source_format=CSV --skip_leading_rows=1 ${GOOGLE_CLOUD_PROJE
 echo "CSV upload complete."
 ```
 
-`CSV upload complete.` と表示されたら **「次へ（Next）」** をクリックしてください。
+`CSV upload complete.` と表示されたら **次へ** をクリックしてください。
 
 ## Step 3: テーマ1（2/3）BigQuery で分析エージェントを作成
 
