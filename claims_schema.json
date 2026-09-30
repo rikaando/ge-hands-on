@@ -1,0 +1,74 @@
+[
+  {
+    "name": "claim_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "保険金請求ID（例: CLM-2026-001）"
+  },
+  {
+    "name": "claim_date",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "請求日（YYYY-MM-DD形式）"
+  },
+  {
+    "name": "plan_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "加入プラン名（'あんしんプラン 70%', 'あんしんプラン 50%', 'あんしんプラン ライト', 'あんしんプラン キュート'）"
+  },
+  {
+    "name": "target_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "補償対象の種類（'犬', '猫', 'うさぎ', 'ハリネズミ', 'フェレット', 'セキセイインコ', '文鳥'）"
+  },
+  {
+    "name": "breed",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "品種名（例: トイ・プードル、混血猫、ミニチュア・ダックスフンド等）"
+  },
+  {
+    "name": "age",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "年齢（歳）"
+  },
+  {
+    "name": "disease_category",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "傷病カテゴリ（例: 外耳炎、皮膚炎、消化器疾患、椎間板ヘルニア、慢性腎臓病等）"
+  },
+  {
+    "name": "treatment_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "診療区分（'通院', '入院', '手術' のいずれか）"
+  },
+  {
+    "name": "claim_method",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "保険金の請求・精算方法（'窓口精算', 'WEB請求', '郵送請求' のいずれか）"
+  },
+  {
+    "name": "medical_fee_yen",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "動物病院での診療費総額（円）"
+  },
+  {
+    "name": "payout_yen",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": "支払保険金額（円）"
+  },
+  {
+    "name": "customer_voice",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "お客さまの声（手続きや補償に関する感想・改善要望コメント）"
+  }
+]
