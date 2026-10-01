@@ -1,6 +1,8 @@
 """社内従業員向け：保険金審査・照会サポートワークフロー（ADK 2.0）."""
 
 from google.adk.agents import Agent, SequentialAgent
+from google.adk.agents.callback_context import CallbackContext
+from google.adk.models.llm_response import LlmResponse
 
 # プラン別の補償ルール（補償割合・通院/入院の1日上限・手術の1回上限）
 PLAN_RULES = {
@@ -53,7 +55,12 @@ def calculate_payout(
         payout = min(max(0, int((eligible_fee_yen - 30000) * 0.9)), 500000) if treatment_type == "手術" else 0
         note = "手術特化プラン（免責30,000円控除後の90%・上限500,000円、通院/入院は対象外）"
     else:
-        rule = PLAN_RULES.get(plan_name, PLAN_RULES["あんしんプラン 70%"])
+        if "50" in plan_name:
+            rule = PLAN_RULES["あんしんプラン 50%"]
+        elif "キュート" in plan_name:
+            rule = PLAN_RULES["あんしんプラン キュート"]
+        else:
+            rule = PLAN_RULES.get(plan_name, PLAN_RULES["あんしんプラン 70%"])
         limit = rule["surgery_limit"] if treatment_type == "手術" else rule["daily_limit"]
         payout = min(int(eligible_fee_yen * rule["rate"]), limit)
         note = f"補償割合{int(rule['rate'] * 100)}%（上限 {limit:,} 円）で試算"
@@ -78,7 +85,9 @@ def calculate_payout(
 
 
 # --- 2. 専門エージェント定義 ---
-def _add_section_break(callback_context, llm_response):
+def _add_section_break(
+    callback_context: CallbackContext, llm_response: LlmResponse
+) -> LlmResponse | None:
     """2段目の出力先頭に改行を付与し、1段目の出力と同一行に繋がるのを防ぐ."""
     if llm_response.content and llm_response.content.parts:
         for part in llm_response.content.parts:

@@ -16,10 +16,10 @@ git clone https://github.com/rikaando/ge-hands-on.git && cd ge-hands-on && cloud
 
 ## 2. リポジトリ構成
 
-* `tutorial.md` - Cloud Shell 右側ペインに表示されるハンズオン手順書（Step 1〜Step 8）
+* `tutorial.md` - Cloud Shell 右側ペインに表示されるハンズオン手順書（Step 1〜Step 9）
 * `claims_sample.csv` - テーマ1で BigQuery に登録する保険金請求・お客さまの声サンプルデータ（100件）
 * `claims_schema.json` - テーマ1で BigQuery テーブルに設定する全12カラムの日本語説明（Description）定義
 * `insurance_agent/` - テーマ2で Cloud Run にデプロイする ADK 2.0 審査・試算ワークフローエージェント（`SequentialAgent`）
   * `agent.py` - ツール関数（2つ）と専門エージェント（`policy_checker` / `payout_calculator`）の直列ワークフロー定義
-  * `requirements.txt` - Python 依存パッケージ定義（`google-adk[a2a]>=2.0.0`）
+* `requirements.txt` - Python 依存パッケージ定義（`google-adk[a2a]>=2.0.0`）
 * `main.py` / `Dockerfile` - A2A プロトコル公開用エントリーポイントおよびコンテナ定義
