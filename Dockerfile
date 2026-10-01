@@ -14,4 +14,4 @@ COPY --chown=appuser:appuser main.py ./main.py
 
 USER appuser
 ENV PORT=8080
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT}"]

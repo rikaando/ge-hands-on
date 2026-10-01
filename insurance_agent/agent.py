@@ -51,6 +51,9 @@ def calculate_payout(
         treatment_type: 診療区分（「通院」「入院」「手術」）
         claim_method: 請求方法（「窓口精算」「WEB請求」「郵送請求」）
     """
+    eligible_fee_yen = int(eligible_fee_yen)
+    excluded_fee_yen = int(excluded_fee_yen)
+
     if "ライト" in plan_name:
         payout = min(max(0, int((eligible_fee_yen - 30000) * 0.9)), 500000) if treatment_type == "手術" else 0
         note = "手術特化プラン（免責30,000円控除後の90%・上限500,000円、通院/入院は対象外）"
