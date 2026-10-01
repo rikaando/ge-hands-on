@@ -207,16 +207,13 @@ echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
 ```bash
 gcloud config set project $(cat .project_id) --quiet
 export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
-export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} \
-  --format="value(projectNumber)")
 export GOOGLE_CLOUD_LOCATION="us-central1"
-export AGENT_URL="https://insurance-concierge-agent-${PROJECT_NUMBER}.${GOOGLE_CLOUD_LOCATION}.run.app"
 gcloud run deploy insurance-concierge-agent \
   --source . \
   --region=${GOOGLE_CLOUD_LOCATION} \
   --project=${GOOGLE_CLOUD_PROJECT} \
   --no-allow-unauthenticated \
-  --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=global,AGENT_URL=${AGENT_URL}" \
+  --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=global" \
   --quiet
 ```
 
