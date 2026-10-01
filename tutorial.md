@@ -49,7 +49,6 @@ echo "API enablement complete."
 Cloud Run 呼び出し権限（`roles/run.invoker`）と、Vertex AI のモデル利用権限（`roles/aiplatform.user`）を付与します。
 
 ```bash
-export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
 export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} \
   --format="value(projectNumber)")
 gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
