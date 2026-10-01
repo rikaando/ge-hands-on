@@ -155,6 +155,13 @@ ADK のエージェントを作成する場合には、**次へ** をクリッ�
 ADK 2.0 エージェントを Cloud Run にデプロイし、Gemini Enterprise 登録用の `agent_card.json` を生成します。
 コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して順番に実行してください。
 
+※もし途中で Cloud Shell の接続が切れていた場合は、デプロイの前に以下を再実行してください。
+
+```bash
+export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
+```
+
 **1. Cloud Run へのデプロイ**（約2〜3分かかります）
 
 ```bash
@@ -191,35 +198,35 @@ cat agent_card.json
 
 3. エージェントの認可画面では何も変更せず **スキップして終了** をクリックします。
 
-4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `@concierge_agent` をクリックし、以下の質問を送信してみましょう。
+4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `concierge_agent` をクリックし、以下の質問を送信してみましょう。
 
 ```text
-@concierge_agent あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
+あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
 ```
 
 ```text
-@concierge_agent あんしんプラン ライトで、椎間板ヘルニアの手術28万円をWEB請求するといくら出る？
+あんしんプラン ライトで、椎間板ヘルニアの手術28万円をWEB請求するといくら出る？
 ```
 
 確認できたら **次へ** をクリックしてください。
 
-## Step 8: 応用編まとめ（Agent Designer で Google Workspace と連携）
+## Step 8: 応用編まとめ（ワークフローで Google Workspace と連携）
 
 最後に、Step 7 で登録した `concierge_agent` と Google Workspace（Gmail）をノーコードでつなぐワークフローを作成します。
 
-1. Gemini Enterprise のアプリ画面左メニュー **エージェント** から、**+ 新しいエージェント（または + エージェントを作成）** → **Workflow（ワークフロー）** → **Build manually（手動で作成）** をクリックします。
+1. Gemini Enterprise のアプリ画面でワークフロー作成画面を開き、画面右下の **手動で構築** をクリックします。
 
-2. 最初の **Manual trigger（手動トリガー）** ノードをクリックし、**Input fields（入力フィールド）** に `inquiry` を追加します。
+2. 最初の **手動** ノードをクリックし、**入力フィールド** に `inquiry` を追加して **保存** します。
 
-3. **+ Add step（ステップを追加）** → **Existing agents（既存のエージェント）** から **`concierge_agent`** を選択します。
-   **Prompt** 欄で **`+`** を押し、入力チップ（`${inquiry}`）を挿入します。
+3. **+ ステップを追加** → **既存のエージェント** から **`concierge_agent`** を選択します。
+   **プロンプト** 欄で **`+`** を押し、入力チップ（`inquiry`）を挿入します。
 
-4. 続けて **+ Add step（ステップを追加）** → **Apps**（`View all`）→ **Gmail** → **Send message（メッセージを送信）** を選択し、以下を設定します。
-   * **To** 欄に自分のメールアドレスを入力
-   * **Subject** 欄に半角英数字で `Claims Review Result` と入力
-   * **Message** 欄で **`+`** を押し、`concierge_agent` の出力チップ（`${concierge_agent.output}`）を挿入
+4. 続けて **+ ステップを追加** → **アプリ**（**すべて表示**）→ **Gmail** → **メッセージを送信** を選択し、以下を設定します。
+   * **To（宛先）** 欄に自分のメールアドレスを入力
+   * **Subject（件名）** 欄に半角英数字で `Claims Review Result` と入力
+   * **Message（メッセージ）** 欄で **`+`** を押し、`concierge_agent` の出力チップを挿入
 
-5. 画面上部の **Test（または Preview）** タブを開き、`inquiry` に以下を入力して実行すると、審査・試算結果が Gmail へ自動送信されます。
+5. 画面上部の **テスト** タブを開き、`inquiry` に以下を入力して実行すると、審査・試算結果が Gmail へ自動送信されます。
 
 ```text
 あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
