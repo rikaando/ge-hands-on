@@ -1,5 +1,7 @@
 # Gemini Enterprise ハンズオン応用編
 
+<walkthrough-tutorial-duration duration="30"></walkthrough-tutorial-duration>
+
 このチュートリアルでは、社内業務で活用する2つのエージェントを作成し、Gemini Enterprise に公開して連携する流れを体験します。
 
 1. **テーマ1（データ分析）**
@@ -20,7 +22,12 @@
 ```bash
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
-gcloud services enable bigquery.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com aiplatform.googleapis.com discoveryengine.googleapis.com geminidataanalytics.googleapis.com cloudaicompanion.googleapis.com dataplex.googleapis.com agentregistry.googleapis.com
+gcloud services enable \
+  bigquery.googleapis.com run.googleapis.com \
+  cloudbuild.googleapis.com artifactregistry.googleapis.com \
+  aiplatform.googleapis.com discoveryengine.googleapis.com \
+  geminidataanalytics.googleapis.com cloudaicompanion.googleapis.com \
+  dataplex.googleapis.com agentregistry.googleapis.com
 echo "API enablement complete."
 ```
 
@@ -31,17 +38,28 @@ Cloud Run 呼び出し権限（`roles/run.invoker`）と、Vertex AI のモデ�
 
 ```bash
 export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
-export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
-gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" --role="roles/run.invoker" --condition=None --no-user-output-enabled --quiet
-gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" --role="roles/aiplatform.user" --condition=None --no-user-output-enabled --quiet
+export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} \
+  --format="value(projectNumber)")
+gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
+  --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" \
+  --role="roles/run.invoker" \
+  --condition=None --no-user-output-enabled --quiet
+gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/aiplatform.user" \
+  --condition=None --no-user-output-enabled --quiet
 echo "Step 1 setup complete."
 ```
 
 ※Gemini Enterprise App が別プロジェクトにある場合のみ、以下の `GEMINI_ENTERPRISE_PROJECT_ID` を書き換えて実行してください（同一プロジェクトの場合は不要です）。
 
 ```bash
-export GE_PROJECT_NUMBER=$(gcloud projects describe GEMINI_ENTERPRISE_PROJECT_ID --format="value(projectNumber)")
-gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="serviceAccount:service-${GE_PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" --role="roles/run.invoker" --condition=None --no-user-output-enabled --quiet
+export GE_PROJECT_NUMBER=$(gcloud projects describe GEMINI_ENTERPRISE_PROJECT_ID \
+  --format="value(projectNumber)")
+gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
+  --member="serviceAccount:service-${GE_PROJECT_NUMBER}@gcp-sa-discoveryengine.iam.gserviceaccount.com" \
+  --role="roles/run.invoker" \
+  --condition=None --no-user-output-enabled --quiet
 ```
 
 実行が完了したら **次へ** をクリックしてください。
@@ -56,7 +74,9 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="service
 gcloud config set project $(cat .project_id) --quiet
 export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
 bq --location=US mk -d -f ${GOOGLE_CLOUD_PROJECT}:insurance_demo
-bq load --replace --source_format=CSV --skip_leading_rows=1 ${GOOGLE_CLOUD_PROJECT}:insurance_demo.claims ./claims_sample.csv ./claims_schema.json
+bq load --replace --source_format=CSV --skip_leading_rows=1 \
+  ${GOOGLE_CLOUD_PROJECT}:insurance_demo.claims \
+  ./claims_sample.csv ./claims_schema.json
 echo "CSV upload complete."
 ```
 
@@ -77,15 +97,16 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 3. **ナレッジソース** の **ソースの追加** をクリックし、**`insurance_demo` -> `claims`** テーブルを選択して **「確認」** をクリックします。
 
 4. **手順** に以下を貼り付けます。
-   ```text
-   あなたは保険金請求・お客さまの声（VOC）データを分析するアシスタントです。
-   - 件数や金額のランキング・比較を行う際は、集計表とあわせて見やすいグラフ（棒グラフや円グラフ）を積極的に生成して可視化してください。
-   - 1つのグラフに「件数」と「金額（円）」のような単位・桁数が大きく異なる指標を混在させないでください。
-   - SQLのSELECT句では、カラム名に日本語の別名（例: 種別, 傷病名, プラン名, 請求件数, 平均診療費_円, 平均支払保険金_円）を付け、val1のような汎用名は使わないでください。
-   - 1回のクエリで集計軸が異なる複数の表をUNION ALLで結合せず、1つの分かりやすい集計表として出力してください。
-   - 金額の平均値は ROUND 関数で整数（1円単位）に丸めて表示してください。
-   - お客さまの声（customer_voice）の分析時は、精算方法（claim_method）ごとの傾向や改善要望を要約してください。
-   ```
+
+```none
+あなたは保険金請求・お客さまの声（VOC）データを分析するアシスタントです。
+- 件数や金額のランキング・比較を行う際は、集計表とあわせて見やすいグラフ（棒グラフや円グラフ）を積極的に生成して可視化してください。
+- 1つのグラフに「件数」と「金額（円）」のような単位・桁数が大きく異なる指標を混在させないでください。
+- SQLのSELECT句では、カラム名に日本語の別名（例: 種別, 傷病名, プラン名, 請求件数, 平均診療費_円, 平均支払保険金_円）を付け、val1のような汎用名は使わないでください。
+- 1回のクエリで集計軸が異なる複数の表をUNION ALLで結合せず、1つの分かりやすい集計表として出力してください。
+- 金額の平均値は ROUND 関数で整数（1円単位）に丸めて表示してください。
+- お客さまの声（customer_voice）の分析時は、精算方法（claim_method）ごとの傾向や改善要望を要約してください。
+```
 
 5. 画面右上の **保存** をクリックし、右側の **公開** をクリックします。
    開いたダイアログの右下の **「Publish agent」** をクリックし、エージェントを公開します。
@@ -113,15 +134,15 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 
 4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `claims_analyzer` をクリックし、以下の質問を送信してみましょう。
 
-```text
+```none
 犬と猫それぞれで、請求件数が多い傷病トップ5を棒グラフで教えて
 ```
 
-```text
+```none
 プラン別の平均診療費と平均支払保険金を棒グラフで比較して
 ```
 
-```text
+```none
 窓口精算・WEB請求・郵送請求それぞれの件数（円グラフ）と、お客さまの声にある改善要望の傾向をまとめて
 ```
 
@@ -174,10 +195,17 @@ echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
 ```bash
 gcloud config set project $(cat .project_id) --quiet
 export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
-export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} --format="value(projectNumber)")
+export PROJECT_NUMBER=$(gcloud projects describe ${GOOGLE_CLOUD_PROJECT} \
+  --format="value(projectNumber)")
 export GOOGLE_CLOUD_LOCATION="us-central1"
 export AGENT_URL="https://insurance-concierge-agent-${PROJECT_NUMBER}.${GOOGLE_CLOUD_LOCATION}.run.app"
-gcloud run deploy insurance-concierge-agent --source . --region=${GOOGLE_CLOUD_LOCATION} --project=${GOOGLE_CLOUD_PROJECT} --no-allow-unauthenticated --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=global,AGENT_URL=${AGENT_URL}" --quiet
+gcloud run deploy insurance-concierge-agent \
+  --source . \
+  --region=${GOOGLE_CLOUD_LOCATION} \
+  --project=${GOOGLE_CLOUD_PROJECT} \
+  --no-allow-unauthenticated \
+  --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},GOOGLE_CLOUD_LOCATION=global,AGENT_URL=${AGENT_URL}" \
+  --quiet
 ```
 
 **2. 登録用 `agent_card.json` の生成**
@@ -186,7 +214,10 @@ gcloud run deploy insurance-concierge-agent --source . --region=${GOOGLE_CLOUD_L
 ```bash
 export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
 export GOOGLE_CLOUD_LOCATION="us-central1"
-export AGENT_URL=$(gcloud run services describe insurance-concierge-agent --region=${GOOGLE_CLOUD_LOCATION} --project=${GOOGLE_CLOUD_PROJECT} --format="value(status.url)")
+export AGENT_URL=$(gcloud run services describe insurance-concierge-agent \
+  --region=${GOOGLE_CLOUD_LOCATION} \
+  --project=${GOOGLE_CLOUD_PROJECT} \
+  --format="value(status.url)")
 sed "s|__AGENT_URL__|${AGENT_URL}|g" agent_card.template.json > agent_card.json
 cat agent_card.json
 ```
@@ -207,11 +238,11 @@ cat agent_card.json
 
 4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `concierge_agent` をクリックし、以下の質問を送信してみましょう。
 
-```text
+```none
 あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
 ```
 
-```text
+```none
 あんしんプラン ライトで、椎間板ヘルニアの手術28万円をWEB請求するといくら出る？
 ```
 
@@ -235,7 +266,7 @@ cat agent_card.json
 
 5. 画面上部の **テスト** タブを開き、`inquiry` に以下を入力して実行すると、審査・試算結果が Gmail へ自動送信されます。
 
-```text
+```none
 あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
 ```
 
@@ -270,5 +301,8 @@ bq rm -r -f -d ${GOOGLE_CLOUD_PROJECT}:insurance_demo
 gcloud config set project $(cat .project_id) --quiet
 export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
 export GOOGLE_CLOUD_LOCATION="us-central1"
-gcloud run services delete insurance-concierge-agent --region=${GOOGLE_CLOUD_LOCATION} --project=${GOOGLE_CLOUD_PROJECT} --quiet
+gcloud run services delete insurance-concierge-agent \
+  --region=${GOOGLE_CLOUD_LOCATION} \
+  --project=${GOOGLE_CLOUD_PROJECT} \
+  --quiet
 ```
