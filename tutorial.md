@@ -97,8 +97,8 @@ echo "CSV upload complete."
 
 BigQuery の Conversational Analytics 機能を使い、自然言語でデータを集計・分析するエージェントを作成します。
 
-1. [BigQuery コンソール](https://console.cloud.google.com/bigquery) を開きます。
-   左メニューの **エージェント** → **+ 新しいエージェント** をクリックします。
+1. <walkthrough-path-nav path="/bigquery">BigQuery コンソール</walkthrough-path-nav>（別タブで開く場合は [こちら](https://console.cloud.google.com/bigquery)）を開きます。
+   左メニューの <walkthrough-spotlight-pointer cssSelector="[aria-label*='エージェント'], [aria-label*='Agents'], a[href*='conversational-analytics']">エージェント</walkthrough-spotlight-pointer>（英語 UI の場合は **Agents**）→ **+ 新しいエージェント** をクリックします。
 
 2. 基本情報を入力します。
    * **エージェント名** に `claims_analyzer` を入力
