@@ -48,13 +48,13 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} --member="service
 
 ## Step 2: テーマ1（1/3）BigQuery へのサンプルデータ登録
 
-対話型のデータ分析エージェントを作成するために、BigQuery にデータセットを作成し、保険金請求とお客様の声のサンプルデータ(claims_sample.csv)をアップロードします。
+対話型のデータ分析エージェントを作成するために、BigQuery にデータセットを作成し、保険金請求とお客さまの声のサンプルデータ（`claims_sample.csv`）をアップロードします。
 
 コードブロック右上の **「Cloud Shell にコピー」** をクリックし、ターミナルで **Enter キー** を押して実行してください。
 
 ```bash
 gcloud config set project $(cat .project_id) --quiet
-export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
 bq --location=US mk -d -f ${GOOGLE_CLOUD_PROJECT}:insurance_demo
 bq load --replace --source_format=CSV --skip_leading_rows=1 ${GOOGLE_CLOUD_PROJECT}:insurance_demo.claims ./claims_sample.csv ./claims_schema.json
 echo "CSV upload complete."
@@ -106,7 +106,7 @@ BigQuery の Conversational Analytics 機能を使い、自然言語でデータ
 
 3. エージェントの認可では **Google が管理するデフォルトの認証情報** を選択し、**完了** をクリックします。
 
-4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `@claims_analyzer` をクリックし、以下の質問を送信してみましょう。
+4. Gemini Enterprise のアプリ画面を再読み込みし、**エージェント > 自分の組織から** に追加された `claims_analyzer` をクリックし、以下の質問を送信してみましょう。
 
 ```text
 犬と猫それぞれで、請求件数が多い傷病トップ5を棒グラフで教えて
@@ -136,7 +136,7 @@ ADK のエージェントを作成する場合には、**次へ** をクリッ�
 
 <walkthrough-editor-open-file filePath="main.py">main.py を開く</walkthrough-editor-open-file>
 
-ファイルが開かなかった場合には、エディタからge-hands-onのフォルダを開き、上記のファイルを確認します。
+ファイルが開かなかった場合には、エディタから `ge-hands-on` のフォルダを開き、上記のファイルを確認します。
 
 **コードの構成（`insurance_agent/agent.py`）**
 * **1. ツール定義（Python 関数）**
@@ -161,6 +161,8 @@ ADK 2.0 エージェントを Cloud Run にデプロイし、Gemini Enterprise �
 export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
 echo "${GOOGLE_CLOUD_PROJECT}" > .project_id
 ```
+
+（※もし `(unset)` や認証エラーが表示された場合は、`gcloud config set project プロジェクトID` や `gcloud auth login` を実行してから再度実行してください）
 
 **1. Cloud Run へのデプロイ**（約2〜3分かかります）
 
@@ -214,17 +216,17 @@ cat agent_card.json
 
 最後に、Step 7 で登録した `concierge_agent` と Google Workspace（Gmail）をノーコードでつなぐワークフローを作成します。
 
-1. Gemini Enterprise のアプリ画面でワークフロー作成画面を開き、画面右下の **手動で構築** をクリックします。
+1. Gemini Enterprise のアプリ画面左メニューから **ワークフロー**（紙飛行機アイコン）を開き、画面右下の **手動で構築** をクリックします。
 
 2. 最初の **手動** ノードをクリックし、**入力フィールド** に `inquiry` を追加して **保存** します。
 
 3. **+ ステップを追加** → **既存のエージェント** から **`concierge_agent`** を選択します。
-   **プロンプト** 欄で **`+`** を押し、入力チップ（`inquiry`）を挿入します。
+   **プロンプト** 欄で **+** を押し、入力チップ（`inquiry`）を挿入します。
 
 4. 続けて **+ ステップを追加** → **アプリ**（**すべて表示**）→ **Gmail** → **メッセージを送信** を選択し、以下を設定します。
    * **To（宛先）** 欄に自分のメールアドレスを入力
    * **Subject（件名）** 欄に半角英数字で `Claims Review Result` と入力
-   * **Message（メッセージ）** 欄で **`+`** を押し、`concierge_agent` の出力チップを挿入
+   * **Message（メッセージ）** 欄で **+** を押し、`concierge_agent` の出力チップを挿入
 
 5. 画面上部の **テスト** タブを開き、`inquiry` に以下を入力して実行すると、審査・試算結果が Gmail へ自動送信されます。
 
@@ -232,7 +234,9 @@ cat agent_card.json
 あんしんプラン 70%で、通院（外耳炎15,000円、ワクチン3,000円）を窓口精算するといくら出る？
 ```
 
-## 完了
+確認できたら **次へ** をクリックしてください。
+
+## Step 9: 完了とクリーンアップ
 
 <walkthrough-conclusion-trophy></walkthrough-conclusion-trophy>
 
@@ -240,3 +244,26 @@ cat agent_card.json
 * BigQuery の100件データを分析するエージェント（`claims_analyzer`）
 * Cloud Run 上で動く ADK 2.0 保険金審査・試算エージェント（`concierge_agent`）
 * ADK エージェントと Google Workspace をつなぐノーコード・ワークフロー
+
+---
+
+### リソースのクリーンアップ（任意）
+
+ハンズオン終了後、作成した BigQuery データセットおよび Cloud Run サービスを削除する場合は、以下のコマンドをテーマごとに実行してください。
+
+**1. テーマ1のリソース削除（BigQuery データセット）**
+
+```bash
+gcloud config set project $(cat .project_id) --quiet
+export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
+bq rm -r -f -d ${GOOGLE_CLOUD_PROJECT}:insurance_demo
+```
+
+**2. テーマ2のリソース削除（Cloud Run サービス）**
+
+```bash
+gcloud config set project $(cat .project_id) --quiet
+export GOOGLE_CLOUD_PROJECT=$(cat .project_id)
+export GOOGLE_CLOUD_LOCATION="us-central1"
+gcloud run services delete insurance-concierge-agent --region=${GOOGLE_CLOUD_LOCATION} --project=${GOOGLE_CLOUD_PROJECT} --quiet
+```
